@@ -1,0 +1,44 @@
+{{ define "main" }}
+
+<div class="home-header">
+    <h1>Shiver</h1>
+    <p>Это домашняя страница.</p>
+</div>
+
+<div class="home-posts">
+    {{ $paginator := .Paginate (where .Site.RegularPages "Params.hidden" "!=" true) }}
+    {{ range $paginator.Pages }}
+        <div class="post-item">
+            <p>
+                {{ if .Description }}
+                    {{ .Description }}
+                {{ else }}
+                    {{ .Summary }}
+                {{ end }}
+            </p>
+            {{ partial "post-item-meta.html" . }}
+            <div class="post-image" style="background-image: url('/content/default.jpg'); width:300px; height:200px; background-size: cover;"></div>
+        </div>
+    {{ end }}
+    
+    <div class="pagination">
+        {{ if $paginator.HasPrev }}
+            <a href="{{ $paginator.Prev.URL }}">Previous</a>
+        {{ end }}
+        {{ if $paginator.HasNext }}
+            <a href="{{ $paginator.Next.URL }}">Next</a>
+        {{ end }}
+    </div>
+</div>
+
+<div class="home-links">
+    <h2>Другие страницы</h2>
+    <ul>
+        <li><a href="{{ .Site.BaseURL }}about/">О проекте</a></li>
+        <li><a href="{{ .Site.BaseURL }}journal/">Журнал</a></li>
+        <li><a href="{{ .Site.BaseURL }}participants/">Участники</a></li>
+        <li><a href="{{ .Site.BaseURL }}resources/">Ресурсы</a></li>
+    </ul>
+</div>
+
+{{ end }}
