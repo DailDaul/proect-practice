@@ -359,7 +359,7 @@ class Client(object)
 * преобразует данные в соответствующие типы Python (строки, целые числа, списки, словари, объекты Error);
 * возвращает полученный результат.
 
-Более подробная информация о том, какая строка за что отвечает, находится в файле [server.py]()
+Более подробная информация о том, какая строка за что отвечает, находится в файле [client.py](https://github.com/DailDaul/proect-practice/blob/master/src/client.py)
 ```
     def read_response(self):
         first_byte = self._fh.read(1)
