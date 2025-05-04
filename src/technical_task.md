@@ -172,3 +172,23 @@ def _write(self, buf, data):
         else:
             raise CommandError('unrecognized type: %s' % type(data))
 ```
+
+На этом работу с классом ```ProtocolHandler``` мы закончили. Следующий основной класс, необходимый для сервера, мы назовём ```Server``` соотвественно, который будет инициализировать работу сервера. В рамках этого класса необходимо создать ```конструктор``` для найстройки сервера, а также методы, которые создают по экземпляру для ```StreamServer``` и ```ProtocolHandler```.
+```
+class Server(object): #Основной класс, который инициализирует сервер
+    def __init__(self, host='127.0.0.1', port=31337, max_clients=64): #Конструктор, который настраивает сервер
+        self._pool = Pool(max_clients) #Создает пул зеленых потоков с заданным максимальным количеством клиентов
+        self._server = StreamServer( #Создает экземпляр StreamServer, который будет обрабатывать входящие соединения, используя метод connection_handler
+            (host, port),
+            self.connection_handler,
+            spawn=self._pool)
+
+        self._protocol = ProtocolHandler() #Создает экземпляр ProtocolHandler, который будет обрабатывать запросы и ответы
+        self._kv = {} #Словарь для хранения пар ключ-значение, который будет использоваться для хранения данных
+        self._commands = self.get_commands()
+```
+
+
+
+
+
