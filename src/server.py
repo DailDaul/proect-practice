@@ -17,7 +17,7 @@ Error = namedtuple('Error', ('message',)) #Создает неизменяемы
 class ProtocolHandler(object): #Этот класс будет обрабатывать запросы и ответы
     def __init__(self):
         self.handlers = { #создание словаря
-            b'+': self.handle_simple_string,
+            b'+': self.handle_simple_string,#изменено
             b'-': self.handle_error,
             b':': self.handle_integer,
             b'$': self.handle_string,
@@ -40,7 +40,7 @@ class ProtocolHandler(object): #Этот класс будет обрабаты�
             raise CommandError('bad request')
 
     def handle_simple_string(self, socket_file):
-        return socket_file.readline().rstrip(b'\r\n').decode('utf-8')
+        return socket_file.readline().rstrip(b'\r\n').decode('utf-8')# вот это все изменено
 
     def handle_error(self, socket_file):
         return Error(socket_file.readline().rstrip(b'\r\n').decode('utf-8'))
@@ -49,12 +49,11 @@ class ProtocolHandler(object): #Этот класс будет обрабаты�
         return int(socket_file.readline().rstrip(b'\r\n').decode('utf-8'))
 
     def handle_string(self, socket_file):
-        # First read the length ($<length>\r\n).
-        length = int(socket_file.readline().rstrip(b'\r\n').decode('utf-8'))
+        length = int(socket_file.readline().rstrip(b'\r\n'))
         if length == -1:
-            return None  # Special-case for NULLs.
-        length += 2  # Include the trailing \r\n in count.
-        return socket_file.read(length)[:-2].decode('utf-8')
+            return None
+        data = socket_file.read(length + 2)
+        return data[:-2].decode('utf-8')
 
     def handle_array(self, socket_file):
         num_elements = int(socket_file.readline().rstrip(b'\r\n').decode('utf-8'))
@@ -78,7 +77,7 @@ class ProtocolHandler(object): #Этот класс будет обрабаты�
             data = data.encode('utf-8')  # Преобразуем строку в байты
 
         if isinstance(data, bytes):
-            buf.write(b'$%d\r\n' % len(data))  # Записываем байты
+            buf.write(b'$%d\r\n' % len(data))  # Записываем байты тоже изменено
             buf.write(data)  # Записываем сами байты
         elif isinstance(data, int):
             buf.write(b':%d\r\n' % data)  # Записываем целое число
@@ -141,10 +140,7 @@ class Server(object): #Основной класс, который инициа�
 
     def get_response(self, data): # предназначен для обработки данных, полученных от клиента
         if not isinstance(data, list):
-            try:
-                data = data.split()
-            except:
-                raise CommandError('Request must be list or simple string.')
+            raise CommandError('Request must be a list')
 
         if not data:
             raise CommandError('Missing command')
@@ -153,7 +149,11 @@ class Server(object): #Основной класс, который инициа�
         if command not in self._commands:
             raise CommandError('Unrecognized command: %s' % command)
 
-        return self._commands[command](*data[1:])
+        try:
+            return self._commands[command](*data[1:])
+            print(f"Sending response: {result}")
+        except Exception as e:
+            raise CommandError(f"Error executing command: {e}")
 
     def run(self): #отвечает за запуск сервера и его работу в бесконечном цикле
         print(f"Сервер запущен на {self._server.address[0]}:{self._server.address[1]}")
@@ -181,7 +181,7 @@ class Server(object): #Основной класс, который инициа�
         return [self._kv.get(key) for key in keys]
 
     def mset(self, *items):
-        data = zip(items[::2], items[1::2])
+        data = list(zip(items[::2], items[1::2]))
         for key, value in data:
             self._kv[key] = value
         return len(data)
