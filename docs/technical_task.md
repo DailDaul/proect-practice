@@ -514,4 +514,6 @@ telnet 127.0.0.1 31337
 *2\r\n$3\r\nGET\r\n$5\r\nmykey\r\n
 ```
 
-и сервер выдаст нужный результат.
+и сервер выдаст нужный результат. Сами команды и ответы будут выглядеть таким образом:
+![](https://github.com/DailDaul/proect-practice/blob/master/src/screens/image.png)
+
