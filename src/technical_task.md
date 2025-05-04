@@ -198,7 +198,86 @@ class Server(object): #Основной класс, который инициа�
 
 ```
 
+Далее создаём метод ```connection_handler```, который будет отвечать за обработку каждого соединения с клиентом. В его рамках также необходимо прописать объект ```socket_file```, который преобразует сокет в объект, похожий на файл, чтобы можно было легко читать и записывать данные.
+```
+   def connection_handler(self, conn, address):
+        socket_file = conn.makefile('rwb')
+        while True:
+            try:
+                data = self._protocol.handle_request(socket_file)
+            except Disconnect:
+                print("Client disconnected gracefully.")
+                break
+
+            try:
+                resp = self.get_response(data)
+            except CommandError as exc:
+                resp = Error(exc.args[0])
+
+            self._protocol.write_response(socket_file, resp)
+```
+
+Далее метод ```get_response```, который предназначен для обработки данных, которые сервер получил от клиента.
+```
+ def get_response(self, data):
+        if not isinstance(data, list):
+            raise CommandError('Request must be a list')
+
+        if not data:
+            raise CommandError('Missing command')
+
+        command = data[0].upper()
+        if command not in self._commands:
+            raise CommandError('Unrecognized command: %s' % command)
+
+        try:
+            return self._commands[command](*data[1:])
+            print(f"Sending response: {result}")
+        except Exception as e:
+            raise CommandError(f"Error executing command: {e}")
+```
+
+Оставшиеся методы в коде нужны для непосредственной работы сервера, ```run``` - для беспрерывной работы сервера; ```get``` - за получение данных сервером; ```set``` - за установку сервера, ```delete``` - удаление ключей из внутреннего словаря; ```flush``` - для очищения хранилища; ```mget``` - предназначен для нескольких ключей из хранилища данных, а ```mset``` - для установки пар значений.
+```
+    def run(self):
+        print(f"Сервер запущен на {self._server.address[0]}:{self._server.address[1]}")
+        self._server.serve_forever()
+
+    def get(self, key):
+        return self._kv.get(key)
+
+    def set(self, key, value):
+        self._kv[key] = value
+        return 1
+
+    def delete(self, key):
+        if key in self._kv:
+            del self._kv[key]
+            return 1
+        return 0
+
+    def flush(self):
+        kvlen = len(self._kv)
+        self._kv.clear()
+        return kvlen
+
+    def mget(self, *keys):
+        return [self._kv.get(key) for key in keys]
+
+    def mset(self, *items):
+        data = list(zip(items[::2], items[1::2]))
+        for key, value in data:
+            self._kv[key] = value
+        return len(data)
 
 
+if __name__ == '__main__':
+    from gevent import monkey; monkey.patch_all()
+    Server().run()
+```
+
+#### 5. Client.py
+
+#### 6. Работа с написанным Redis
 
 
