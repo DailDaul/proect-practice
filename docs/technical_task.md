@@ -71,7 +71,7 @@ pip install gevent
 
 #### 3. Файлы проекта
 При правильном создании проекта в файлах должны были быть автоматически созданы два файла: server.py и client.py. Если же этого не случилось по каким-то причинам, то просто нажимаем на проект, после чего высвечивается окно, в котором нажимаем на ```New```, а уже в новом окне ```Python file```. Таких нужно два - один для сервера, другой - для клиента соотвественно.
-![](https://github.com/DailDaul/proect-practice/blob/master/src/screens/)
+![](https://github.com/DailDaul/proect-practice/blob/master/src/screens/Web_Photo_Editor21.jpg)
 
 #### 4. Server.py
 Теперь начинаем работу с кодом. 
