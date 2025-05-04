@@ -77,7 +77,7 @@ Error = namedtuple('Error', ('message',))
 * класс ```Disconnect``` будет вызываться, когда клиент отключается;
 * ```Error = namedtuple``` же создаёт неизменяемый объект, который хранит сообщение об ошибке.
 
-Теперь можно приступать к созданию классов и методов, который нужны для непосредственной работы сервера с клиентом. Для этого создаём класс ```ProtocolHandler```, который будет отвечать за обработку сервером запросов и ответов от клиента. Помимо него также будет создан словарь ```self.handlers``` в методе ```def_init```:
+Теперь можно приступать к созданию классов и методов, который нужны для непосредственной работы сервера с клиентом. Для этого создаём класс ```ProtocolHandler```, который будет отвечать за обработку сервером запросов и ответов от клиента. Помимо него также будет создан словарь ```self.handlers``` в методе ```def _init_```:
 ```
 class ProtocolHandler(object):
     def __init__(self):
@@ -90,7 +90,7 @@ class ProtocolHandler(object):
             b'%': self.handle_dict}
 ```
 
-После создания словаря и класса, мы также создаём метод ```def handle_request```, который будет запрашивать запросы от клиента, а также в его рмках методы, которые будут обрабатывать разные типы символов (вроде ```integer```, ```string``` и т.д.):
+После создания словаря и класса, мы также создаём метод ```handle_request```, который будет запрашивать запросы от клиента, а также в его рмках методы, которые будут обрабатывать разные типы символов (вроде ```integer```, ```string``` и т.д.):
 ```
 def handle_request(self, socket_file):
         first_byte = socket_file.read(1)
@@ -133,4 +133,42 @@ def handle_request(self, socket_file):
         elements = [self.handle_request(socket_file)
                     for _ in range(num_items * 2)]
         return dict(zip(elements[::2], elements[1::2]))
+```
+
+Следующий метод, необходимый для корректной работы сервера - это метод ```write_response``` для сериализации данных ответа или, простыми словами, для преобразования сложных структур в более простой формат, который уже можно передать по сети и отправить клиенту.
+```
+def write_response(self, socket_file, data): #Метод, который будет сериализовать данные ответа и отправлять их клиенту
+        buf = BytesIO()
+        self._write(buf, data)
+        buf.seek(0)
+        socket_file.write(buf.getvalue())
+        socket_file.flush()
+```
+
+Оставшийся метод в этом классе необходим для работы с запросами клиента - метод ```_write``` отвечает за запись данных в буфер, предназначенный для отправки клиенту. Все команды типа ```if``` и ```elif``` нужны, в свою очередь, для записи.
+```
+def _write(self, buf, data):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
+        if isinstance(data, bytes):
+            buf.write(b'$%d\r\n' % len(data))
+            buf.write(data)
+        elif isinstance(data, int):
+            buf.write(b':%d\r\n' % data)
+        elif isinstance(data, Error):
+            buf.write(b'-%s\r\n' % data.message.encode('utf-8'))
+        elif isinstance(data, (list, tuple)):
+            buf.write(b'*%d\r\n' % len(data))
+            for item in data:
+                self._write(buf, item)
+        elif isinstance(data, dict):
+            buf.write(b'%%%d\r\n' % len(data))
+            for key in data:
+                self._write(buf, key)
+                self._write(buf, data[key])
+        elif data is None:
+            buf.write(b'$-1\r\n')
+        else:
+            raise CommandError('unrecognized type: %s' % type(data))
 ```
