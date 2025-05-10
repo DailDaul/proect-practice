@@ -48,7 +48,7 @@
    - **Ожидаемое время:** взаимодействие — 4 часа, написание отчёта — 4 часа.
 
 5. **Отчёт по практике**
-   - Составьте отчёт по проектной (учебной) практике на основании шаблона (структуры), размещённого в папке reports. Шаблон (структура) приведён в файле [practice_report_template.docx](reports/practice_report_template.docx).
+   - Составьте отчёт по проектной (учебной) практике на основании шаблона (структуры), размещённого в папке reports. Шаблон (структура) приведён в файле [practice_report_template.docx](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fraw.githubusercontent.com%2FDailDaul%2Fproect-practice%2Frefs%2Fheads%2Fmaster%2Freports%2Fpractice_report_template.docx&wdOrigin=BROWSELINK).
    - Разместите отчёт в репозитории в папке reports с именем «Отчёт.docx» или «report.docx».
    - Сформируйте PDF-версию отчёта и также разместите её в папке reports в репозитории.
    - Загрузите оба файла отчёта (DOCX и PDF) в СДО (LMS) в курсе, который будет указан ответственным за проектную (учебную) практику.
